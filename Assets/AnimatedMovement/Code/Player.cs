@@ -1,13 +1,13 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Timeline;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] private float speed = 5f;
     [SerializeField] private float minimumSpeed = 0.001f;
     [SerializeField] private float impulseFraction = 0.5f;
-    [SerializeField] private float maximumAcceleration = 5f;
     [SerializeField] private Rigidbody2D body;
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
@@ -24,14 +24,10 @@ public class Player : MonoBehaviour
     {
         move.action.performed += OnMove;
         move.action.canceled += OnMove;
-        move.action.Enable();
-        //body.linearVelocity = Vector2.right * 10f;
-        desiredX = 5f;
     }
 
     private void OnDisable()
     {
-        move.action.Disable();
         move.action.performed -= OnMove;
         move.action.canceled -= OnMove;
     }
@@ -57,23 +53,12 @@ public class Player : MonoBehaviour
     private void Walk()
     {
         animator.SetBool(braking, false);
-        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
-        if (info.GetHashCode() != walk)
-        {
-            animator.Play(walk, -1);
-        }
+        animator.Play(walk, -1);
     }
 
     private void Stop()
     {
-        if (animator.GetBool(braking))
-        {
-            animator.SetBool(braking, false);
-        }
-        else
-        {
-            animator.Play(stopped, -1);
-        }
+        animator.SetBool(braking, false);
     }
 
     private void Brake()
@@ -89,11 +74,6 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (Mathf.Abs(desiredX) < minimumSpeed)
-        {
-            desiredX = 0f;
-        }
-
         float currentX = body.linearVelocity.x;
         if (Mathf.Abs(currentX) < minimumSpeed)
         {
@@ -105,39 +85,23 @@ public class Player : MonoBehaviour
             FaceDirection(desiredX);
         }
 
-        if (desiredX == 0f)
+        if (desiredX == 0f && currentX == 0)
         {
-            if (currentX == 0f)
-            {
-                Stop();
-            }
-            else
-            {
-                Brake();
-            }
+            Stop();
         }
-        else if (desiredX < 0f)
+        else if (SameDirection(currentX, desiredX))
         {
-            if (desiredX <= currentX && currentX <= 0f)
-            {
-                Walk();
-            }
-            else
-            {
-                Brake();
-            }
+            Walk();
         }
-        else if (desiredX > 0f)
+        else
         {
-            if (desiredX >= currentX && currentX >= 0f)
-            {
-                Walk();
-            }
-            else
-            {
-                Brake();
-            }
+            Brake();
         }
+    }
+
+    private bool SameDirection(float current, float desired)
+    {
+        return current == 0 || Math.Sign(current) * Math.Sign(desired) == 1;
     }
 
     public void MovementImpulse()
