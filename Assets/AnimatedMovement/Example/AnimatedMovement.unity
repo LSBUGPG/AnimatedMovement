@@ -5341,8 +5341,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   speed: 5
   minimumSpeed: 0.001
-  impulseFraction: 0.5
-  maximumAcceleration: 10
+  acceleration: 3
   body: {fileID: 2120998383}
   spriteRenderer: {fileID: 2120998381}
   animator: {fileID: 2120998380}

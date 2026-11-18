@@ -7,7 +7,7 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private float speed = 5f;
     [SerializeField] private float minimumSpeed = 0.001f;
-    [SerializeField] private float impulseFraction = 0.5f;
+    [SerializeField] private float acceleration = 10f;
     [SerializeField] private Rigidbody2D body;
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
@@ -18,7 +18,6 @@ public class Player : MonoBehaviour
     private int braking = Animator.StringToHash("braking");
     private int stopped = Animator.StringToHash("stopped");
     private int startBraking = Animator.StringToHash("start-braking");
-    private int touchingGround = 0;
 
     private void OnEnable()
     {
@@ -39,15 +38,14 @@ public class Player : MonoBehaviour
         desiredX = movement.x * speed;
     }
 
-    private bool FaceDirection(float x)
+    private void FaceDirection(float x)
     {
-        if (x == 0f)
+        if (x == 0)
         {
-            return false;
+            return;
         }
 
         spriteRenderer.flipX = x < 0f;
-        return true;
     }
 
     private void Walk()
@@ -59,6 +57,7 @@ public class Player : MonoBehaviour
     private void Stop()
     {
         animator.SetBool(braking, false);
+        animator.Play(stopped, -1);
     }
 
     private void Brake()
@@ -77,64 +76,29 @@ public class Player : MonoBehaviour
         float currentX = body.linearVelocity.x;
         if (Mathf.Abs(currentX) < minimumSpeed)
         {
-            currentX = 0f;
+            currentX = 0;
         }
 
-        if (!FaceDirection(currentX))
-        {
-            FaceDirection(desiredX);
-        }
-
-        if (desiredX == 0f && currentX == 0)
+        if (desiredX == 0f && currentX == 0f)
         {
             Stop();
         }
         else if (SameDirection(currentX, desiredX))
         {
+            FaceDirection(desiredX);
             Walk();
         }
         else
         {
             Brake();
         }
+
+        float difference = desiredX - currentX;
+        body.AddForce(Vector2.right * difference * acceleration * body.mass, ForceMode2D.Force);
     }
 
     private bool SameDirection(float current, float desired)
     {
-        return current == 0 || Math.Sign(current) * Math.Sign(desired) == 1;
-    }
-
-    public void MovementImpulse()
-    {
-        if (touchingGround > 0)
-        {
-            if (body.linearVelocity.x != desiredX)
-            {
-                float deltaVelocity = desiredX - body.linearVelocity.x;
-                float acceleration = deltaVelocity * impulseFraction;
-                body.AddForce(Vector2.right * acceleration * body.mass, ForceMode2D.Impulse);
-            }
-        }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground") && collision.transform.position.y > transform.position.y)
-        {
-            touchingGround++;
-        }
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground") && collision.transform.position.y > transform.position.y)
-        {
-            Invoke("CoyoteTime", 0.1f);
-        }
-    }
-
-    private void CoyoteTime()
-    {
-        touchingGround--;
+        return Math.Sign(current) * Math.Sign(desired) >= 0;
     }
 }
