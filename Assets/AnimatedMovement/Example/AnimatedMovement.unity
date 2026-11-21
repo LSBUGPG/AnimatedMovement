@@ -6237,6 +6237,7 @@ GameObject:
   - component: {fileID: 2120998380}
   - component: {fileID: 2120998383}
   - component: {fileID: 2120998385}
+  - component: {fileID: 2120998386}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -6334,7 +6335,7 @@ Transform:
   m_GameObject: {fileID: 2120998379}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.785, y: -0.514, z: 0}
+  m_LocalPosition: {x: -2.785, y: -0.76, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6404,6 +6405,24 @@ CapsuleCollider2D:
   m_Offset: {x: 0.0022640228, y: 0.16943568}
   m_Size: {x: 0.07283163, y: 0.33887136}
   m_Direction: 0
+--- !u!114 &2120998386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2120998379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f45c4137f237a3f4e9560ffaf65a9025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player
+  move: {fileID: -1680190386980627800, guid: 96061ac454a625b438dd63e4bd097d09, type: 3}
+  body: {fileID: 2120998383}
+  spriteRenderer: {fileID: 2120998381}
+  animator: {fileID: 2120998380}
+  speed: 5
+  acceleration: 5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
