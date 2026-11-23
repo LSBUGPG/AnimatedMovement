@@ -4,48 +4,95 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private InputActionReference move;
+    [SerializeField] private InputActionReference moveInput;
+    [SerializeField] private InputActionReference jumpInput;
+    [SerializeField] private InputActionReference runModifier;
     [SerializeField] private Rigidbody2D body;
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
     [SerializeField] private float minimumSpeed = 0.01f;
-    [SerializeField] private float speed = 5;
+    [SerializeField] private float walkSpeed = 3;
+    [SerializeField] private float runSpeed = 6;
     [SerializeField] private float acceleration = 5;
-    private Vector2 desiredMovement;
+    [SerializeField] private float jumpAcceleration = 10;
+    private Vector2 movement;
+    private bool running;
+    private bool grounded = false;
+
+    private readonly int run = Animator.StringToHash("run");
+    private readonly int walk = Animator.StringToHash("walk");
+    private readonly int brake = Animator.StringToHash("start-braking");
+    private readonly int braking = Animator.StringToHash("braking");
+    private readonly int jumping = Animator.StringToHash("jumping");
 
 
     private void OnEnable()
     {
-        move.action.performed += Move;
-        move.action.canceled += Move;
+        moveInput.action.performed += Move;
+        moveInput.action.canceled += Move;
+        runModifier.action.performed += Run;
+        runModifier.action.canceled += Run;
+        jumpInput.action.performed += Jump;
     }
 
     private void OnDisable()
     {
-        move.action.performed -= Move;
-        move.action.canceled -= Move;
+        moveInput.action.performed -= Move;
+        moveInput.action.canceled -= Move;
+        runModifier.action.performed -= Run;
+        runModifier.action.canceled -= Run;
+        jumpInput.action.performed += Jump;
+    }
+
+    private void Jump(InputAction.CallbackContext context)
+    {
+        if (!grounded)
+        {
+            return;
+        }
+
+        body.AddForce(Vector2.up * jumpAcceleration * body.mass, ForceMode2D.Impulse);
+        grounded = false;
+    }
+
+    private void Run(InputAction.CallbackContext context)
+    {
+        running = context.ReadValue<float>() > 0;
     }
 
     private void Move(InputAction.CallbackContext context)
     {
-        desiredMovement = context.ReadValue<Vector2>() * speed;
+        movement = context.ReadValue<Vector2>();
+    }
+
+    private void Run()
+    {
+        animator.SetBool(braking, false);
+        animator.Play(run, -1);
     }
 
     private void Walk()
     {
-        animator.SetBool("braking", false);
-        animator.Play("walk", -1);
+        animator.SetBool(braking, false);
+        animator.Play(walk, -1);
     }
 
     private void Brake()
     {
-        animator.Play("start-braking", -1);
-        animator.SetBool("braking", true);
+        animator.Play(brake, -1);
+        animator.SetBool(braking, true);
     }
 
     private void Stop()
     {
-        animator.SetBool("braking", false);
+        animator.SetBool(braking, false);
+    }
+
+    private void Jump()
+    {
+        animator.Play(jumping, -1);
+        animator.SetBool(braking, false);
+        animator.SetBool(jumping, true);
     }
 
     private void FaceDirection(float direction)
@@ -87,17 +134,29 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        Vector2 velocity = movement * (running? runSpeed : walkSpeed);
         FaceDirection(body.linearVelocity.x);
 
-        if (WantToMove(desiredMovement.x))
+        if (!grounded)
         {
-            if (ChangingDirection(desiredMovement.x, body.linearVelocity.x))
+            Jump();
+        }
+        else if (WantToMove(velocity.x))
+        {
+            if (ChangingDirection(velocity.x, body.linearVelocity.x))
             {
                 Brake();
             }
             else
             {
-                Walk();
+                if (Mathf.Abs(body.linearVelocity.x) > walkSpeed)
+                {
+                    Run();
+                }
+                else
+                {
+                    Walk();
+                }
             }
         }
         else // don't want to move
@@ -112,8 +171,17 @@ public class Player : MonoBehaviour
             }
         }
 
-        Vector2 difference = desiredMovement - body.linearVelocity;
+        Vector2 difference = velocity - body.linearVelocity;
         difference.y = 0;
         body.AddForce(difference * acceleration * body.mass);
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.CompareTag("Ground"))
+        {
+            grounded = true;
+            animator.SetBool(jumping, false);
+        }
     }
 }
