@@ -6786,9 +6786,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f45c4137f237a3f4e9560ffaf65a9025, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  moveInput: {fileID: -1680190386980627800, guid: 96061ac454a625b438dd63e4bd097d09, type: 3}
-  jumpInput: {fileID: -2099379676528639254, guid: 96061ac454a625b438dd63e4bd097d09, type: 3}
-  runModifier: {fileID: -7471211009204490832, guid: 96061ac454a625b438dd63e4bd097d09, type: 3}
+  move: {fileID: -1680190386980627800, guid: 96061ac454a625b438dd63e4bd097d09, type: 3}
+  sprint: {fileID: -7471211009204490832, guid: 96061ac454a625b438dd63e4bd097d09, type: 3}
+  jump: {fileID: -2099379676528639254, guid: 96061ac454a625b438dd63e4bd097d09, type: 3}
   body: {fileID: 2120998383}
   spriteRenderer: {fileID: 2120998381}
   animator: {fileID: 2120998380}
@@ -6796,7 +6796,7 @@ MonoBehaviour:
   walkSpeed: 3
   runSpeed: 6
   acceleration: 5
-  jumpAcceleration: 5
+  jumpPower: 4
 --- !u!1 &2130369440
 GameObject:
   m_ObjectHideFlags: 0
